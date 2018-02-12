@@ -1,11 +1,13 @@
 #!/bin/sh
-# Simple script to control Yeelight over wifi
+:set fileformat=unix
 
 # The command is provided as input by the user to this script
-command=$1
+light=$1
+command=$2
 
 # IP of the Yeelight is discovered by running the configure-light.sh script (works for a single bulb as of now)
-[ -f ip.list ] && ip=`cat ip.list` || echo "Please run configure-light.sh first if you haven't run it before in this network." 
+ip=`grep "$light" ip.list | cut -f 1`
+echo "IP : $ip"
 
 case $command in
 "on")
@@ -15,8 +17,8 @@ case $command in
  printf "{\"id\":1,\"method\":\"set_power\",\"params\":[\"off\",\"smooth\",500]}\r\n" | nc -w1 $ip 55443
  ;;
 "color")
- color_hex=$(grep -i $2 colors | awk -F, '{print $2}') 
- color_int=$(printf '%d' $color_hex) 
+ color_hex=$(grep -i $3 colors | awk -F, '{print $3}')
+ color_int=$(printf '%d' $color_hex)
  printf "{\"id\":1,\"method\":\"set_rgb\",\"params\":[$color_int,\"smooth\",500]}\r\n" | nc -w1 $ip 55443
  ;;
 "disco")
@@ -41,7 +43,7 @@ case $command in
  printf "{\"id\":1,\"method\":\"set_bright\",\"params\":[100]}\r\n" | nc -w1 $ip 55443
  ;;
 "brightness")
- level=$2
+ level=$3
  printf "{\"id\":1,\"method\":\"set_bright\",\"params\":[$level]}\r\n" | nc -w1 $ip 55443
  ;;
 *)
