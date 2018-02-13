@@ -1,25 +1,30 @@
 #!/bin/sh
-:set fileformat=unix
-
 # The command is provided as input by the user to this script
 light=$1
 command=$2
 
 # IP of the Yeelight is discovered by running the configure-light.sh script (works for a single bulb as of now)
-ip=`grep "$light" ip.list | cut -f 1`
+ip=90.66.148.48
+port=`grep "$light" ip.list | cut -f 2`
 echo "IP : $ip"
+echo "port : $port"
+echo "Commande : $command !"
 
 case $command in
 "on")
- printf "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\",\"smooth\",500]}\r\n" | nc -w1 $ip 55443
+ printf "{\"id\":1,\"method\":\"set_power\",\"params\":[\"on\",\"smooth\",500]}\r\n" | nc -w1 $ip $port
  ;;
 "off")
- printf "{\"id\":1,\"method\":\"set_power\",\"params\":[\"off\",\"smooth\",500]}\r\n" | nc -w1 $ip 55443
+ printf "{\"id\":1,\"method\":\"set_power\",\"params\":[\"off\",\"smooth\",500]}\r\n" | nc -w1 $ip $port
  ;;
 "color")
- color_hex=$(grep -i $3 colors | awk -F, '{print $3}')
+ echo "couleur : $3"
+ color_hex=`grep -i "$3" colors | cut -f 2`
+ echo "color hex : $color_hex"
  color_int=$(printf '%d' $color_hex)
- printf "{\"id\":1,\"method\":\"set_rgb\",\"params\":[$color_int,\"smooth\",500]}\r\n" | nc -w1 $ip 55443
+ echo "color int : $color_int"
+ printf "{\"id\":1,\"method\":\"set_rgb\",\"params\":[$color_int,\"smooth\",500]}\r\n" | nc -w1 90.66.148.48 9991
+ echo "1"
  ;;
 "disco")
  printf "{\"id\":1,\"method\":\"start_cf\",\"params\":[ 50, 0, \"100, 1, 255, 100, 100, 1, 32768, 100, 100, 1, 16711680, 100\"]}\r\n" | nc -w1 $ip 55443
@@ -43,7 +48,7 @@ case $command in
  printf "{\"id\":1,\"method\":\"set_bright\",\"params\":[100]}\r\n" | nc -w1 $ip 55443
  ;;
 "brightness")
- level=$3
+ level=$4
  printf "{\"id\":1,\"method\":\"set_bright\",\"params\":[$level]}\r\n" | nc -w1 $ip 55443
  ;;
 *)
